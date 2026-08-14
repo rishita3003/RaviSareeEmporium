@@ -2,10 +2,41 @@ const BASE = '/api';
 //const BASE = import.meta.env.VITE_API_URL || 'https://ravisareeemporium.onrender.com/api';
 
 export async function fetchProducts(search = '') {
-  const url = search ? `${BASE}/products?search=${encodeURIComponent(search)}` : `${BASE}/products`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error((await res.json()).error || 'Failed to fetch products');
-  return res.json();
+  const url = search
+    ? `${BASE}/products?search=${encodeURIComponent(search)}`
+    : `${BASE}/products`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      let message = 'Failed to fetch products';
+
+      try {
+        const data = await res.json();
+        message = data.error || message;
+      } catch {}
+
+      throw new Error(message);
+    }
+
+    return await res.json();
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(
+        'Server is taking too long to respond. Please try again.'
+      );
+    }
+
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function fetchProduct(productId) {
