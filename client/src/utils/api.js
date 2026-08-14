@@ -1,5 +1,5 @@
-//const BASE = '/api';
-const BASE = import.meta.env.VITE_API_URL || 'https://ravisareeemporium.onrender.com/api';
+const BASE = '/api';
+//const BASE = import.meta.env.VITE_API_URL || 'https://ravisareeemporium.onrender.com/api';
 
 export async function fetchProducts(search = '') {
   const url = search ? `${BASE}/products?search=${encodeURIComponent(search)}` : `${BASE}/products`;
